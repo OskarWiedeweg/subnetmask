@@ -4,12 +4,24 @@
 
     let bytes = [192, 168, 178, 1];
 
-    let sub = (32/4)*3;
+    // Subnet Slider Value
+    let sliderValue = (32/4)*3;
 
-    let subnet = [];
-    $: {
-        let ones = sub;
-        let zeros = 32 - sub;
+    // Calculated bytes
+    let subnetBytes = [];
+    let deviceBytes = [];
+    let networkBytes = [];
+
+    // Bitmaps that represent if a given bit in a byte is in the colored range
+    let deviceMaps = [];
+    let networkMaps = [];
+
+    $: calculateSubnetBytes(sliderValue);
+    $: calculateBytesAndMaps(subnetBytes, bytes)
+
+    function calculateSubnetBytes(sliderValue) {
+        let ones = sliderValue;
+        let zeros = 32 - sliderValue;
         let s = "";
         for (let i = 0; i < ones; i++) {
             s += "1";
@@ -17,79 +29,99 @@
         for (let i = 0; i < zeros; i++) {
             s += "0";
         }
-        subnet = s.match(/.{1,8}/g).map(s => parseInt(s, 2));
+        subnetBytes = s.match(/.{1,8}/g)
+            .map(s => parseInt(s, 2));
     }
 
-    let device = [];
-    let deviceMaps = [];
-    let network = [];
-    let networkMaps = [];
-
-    $: {
+    function calculateBytesAndMaps(subnet, bytes) {
         subnet.forEach((v, i) => {
-            device[i] = (255-v) & bytes[i];
+            deviceBytes[i] = (255-v) & bytes[i];
             deviceMaps[i] = (255-v);
-            network[i] = v & bytes[i];
+            networkBytes[i] = v & bytes[i];
             networkMaps[i] = v;
         });
     }
 </script>
 
 <div class="block">
-    <h3>IP</h3>
-    <div class="bytes" style="font-family: monospace">
-        <ByteInput bind:output={bytes[0]}/>
-        <ByteInput bind:output={bytes[1]}/>
-        <ByteInput bind:output={bytes[2]}/>
-        <ByteInput bind:output={bytes[3]} last={true}/>
+    <div class="grid">
+        <h3>IP</h3>
+        <div class="bytes">
+            <ByteInput bind:output={bytes[0]}/>
+            <ByteInput bind:output={bytes[1]}/>
+            <ByteInput bind:output={bytes[2]}/>
+            <ByteInput bind:output={bytes[3]} last={true}/>
+        </div>
+        <div class="bytes">
+            {#each bytes as byte, i}
+                <ByteDisplay bind:byte={byte}/>
+                {#if (i+1 !== bytes.length)}
+                    <span>.</span>
+                {/if}
+            {/each}
+        </div>
 
-        <ByteDisplay bind:byte={bytes[0]}/>.
-        <ByteDisplay bind:byte={bytes[1]}/>.
-        <ByteDisplay bind:byte={bytes[2]}/>.
-        <ByteDisplay bind:byte={bytes[3]}/>
+        <h3 style="grid-column: 1 / 3">Subnetz Maske</h3>
+        <div class="bytes">
+            <span>{subnetBytes[0]}</span>.
+            <span>{subnetBytes[1]}</span>.
+            <span>{subnetBytes[2]}</span>.
+            <span>{subnetBytes[3]}</span>
+        </div>
+        <div>
+            <input type="range" class="slider" bind:value={sliderValue} min="0" max="32" step="1">
+            <div class="bytes">
+                {#each subnetBytes as byte, i}
+                    <ByteDisplay colored={true} bind:byte={byte}/>
+                    {#if (i+1 !== subnetBytes.length)}
+                        <span>.</span>
+                    {/if}
+                {/each}
+            </div>
+        </div>
+        <h3>Netz Teil</h3>
+        <div class="bytes">
+            <span>{networkBytes[0]}</span>.
+            <span>{networkBytes[1]}</span>.
+            <span>{networkBytes[2]}</span>.
+            <span>{networkBytes[3]}</span>
+        </div>
+        <div class="bytes">
+            {#each networkBytes as byte, i}
+                <ByteDisplay colored bind:map={networkMaps[i]} bind:byte={byte}/>
+                {#if (i+1 !== networkMaps.length)}
+                    <span>.</span>
+                {/if}
+            {/each}
+        </div>
+        <h3>Geräte Teil</h3>
+        <div class="bytes">
+            <span>{deviceBytes[0]}</span>.
+            <span>{deviceBytes[1]}</span>.
+            <span>{deviceBytes[2]}</span>.
+            <span>{deviceBytes[3]}</span>
+        </div>
+        <div class="bytes">
+            {#each deviceBytes as byte, i}
+                <ByteDisplay colored bind:map={deviceMaps[i]} bind:byte={byte}/>
+                {#if (i+1 !== networkMaps.length)}
+                    <span>.</span>
+                {/if}
+            {/each}
+        </div>
     </div>
-    <h3>Subnetz Maske</h3>
-    <input type="range" class="slider" bind:value={sub} min="0" max="32" step="1">
-    <div class="bytes">
-        <span>{subnet[0]}</span>.
-        <span>{subnet[1]}</span>.
-        <span>{subnet[2]}</span>.
-        <span>{subnet[3]}</span>
-        <ByteDisplay colored={true} bind:byte={subnet[0]}/>.
-        <ByteDisplay colored="true" bind:byte={subnet[1]}/>.
-        <ByteDisplay colored="true" bind:byte={subnet[2]}/>.
-        <ByteDisplay colored="true" bind:byte={subnet[3]}/>
-    </div>
-    <h3>Netz Teil</h3>
-    <div class="bytes">
-        <span>{network[0]}</span>.
-        <span>{network[1]}</span>.
-        <span>{network[2]}</span>.
-        <span>{network[3]}</span>
-        <ByteDisplay colored bind:map={networkMaps[0]} bind:byte={network[0]}/>.
-        <ByteDisplay colored bind:map={networkMaps[1]} bind:byte={network[1]}/>.
-        <ByteDisplay colored bind:map={networkMaps[2]} bind:byte={network[2]}/>.
-        <ByteDisplay colored bind:map={networkMaps[3]} bind:byte={network[3]}/>
-    </div>
-    <h3>Geräte Teil</h3>
-    <div class="bytes">
-        <span>{device[0]}</span>.
-        <span>{device[1]}</span>.
-        <span>{device[2]}</span>.
-        <span>{device[3]}</span>
-        <ByteDisplay colored bind:map={deviceMaps[0]} bind:byte={device[0]}/>.
-        <ByteDisplay colored bind:map={deviceMaps[1]} bind:byte={device[1]}/>.
-        <ByteDisplay colored bind:map={deviceMaps[2]} bind:byte={device[2]}/>.
-        <ByteDisplay colored bind:map={deviceMaps[3]} bind:byte={device[3]}/>
-    </div>
+
 </div>
 
 <style>
+    :root {
+        font-size: 1.25vw;
+    }
     * {
         margin: 0;
     }
     .block {
-        max-width: 80ch;
+        max-width: 150ch;
         margin: auto;
         display: grid;
         gap: .5rem;
@@ -97,9 +129,10 @@
     }
 
     .bytes {
+        margin-top: auto;
         display: grid;
         gap: .5rem;
-        grid-template-columns: auto 1ch auto 1ch auto 1ch auto;
+        grid-template-columns: repeat(4, 1fr auto);
     }
 
     .slider {
@@ -138,5 +171,15 @@
     }
     h3 {
         border-bottom: 1px solid #d3d3d3;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: .5rem 1rem;
+    }
+
+    .grid h3 {
+        grid-column: 1 / 3;
     }
 </style>
