@@ -51,3 +51,4 @@ jobs:
           stack_file: "stacks/subnetmask.yml"
           stack_name: "subnetmask"
           stack_param: "LABEL=${{ github.sha }}"
+          debug: true
