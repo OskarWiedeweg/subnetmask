@@ -50,3 +50,4 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           stack_file: "stacks/subnetmask.yml"
           stack_name: "subnetmask"
+          stack_param: "LABEL=${{ git_hash }}"
