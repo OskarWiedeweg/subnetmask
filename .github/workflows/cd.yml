@@ -52,5 +52,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           stack_file: "stacks/subnetmask.yml"
           stack_name: "subnetmask"
-          env_file: "stacks/.env"
+          env_file: "LABEL=${{ github.sha }}"
           debug: true
