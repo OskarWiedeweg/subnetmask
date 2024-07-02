@@ -1,0 +1,23 @@
+version: "3"
+
+services:
+  app:
+    image: ghcr.io/oskarwiedeweg/subnetmask:sha-4a51747
+    networks:
+    - traefik-public
+    deploy:
+      labels:
+      - traefik.enable=true
+      - traefik.docker.network=traefik-public
+      - traefik.constraint-label=traefik-public
+      - traefik.http.routers.subnetmask-http.rule=Host(`${DOMAIN:-subnetmask.app.oskarwiedeweg.com}`)
+      - traefik.http.routers.subnetmask-http.entrypoints=http
+      - traefik.http.routers.subnetmask-http.middlewares=https-redirect
+      - traefik.http.routers.subnetmask-https.rule=Host(`${DOMAIN:-subnetmask.app.oskarwiedeweg.com}`)
+      - traefik.http.routers.subnetmask-https.entrypoints=https
+      - traefik.http.routers.subnetmask-https.tls=true
+      - traefik.http.routers.subnetmask-https.tls.certresolver=le
+      - traefik.http.services.subnetmask.loadbalancer.server.port=3000
+networks:
+  traefik-public:
+    external: true
