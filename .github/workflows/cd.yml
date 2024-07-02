@@ -39,6 +39,8 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      - name: Create Deploy .env File
+        run: echo "LABEL=${{ github.sha }}" > stacks/.env
       - name: Deploy stack
         uses: kitconcept/docker-stack-deploy@v1.2.0
         with:
@@ -50,5 +52,5 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
           stack_file: "stacks/subnetmask.yml"
           stack_name: "subnetmask"
-          stack_param: "LABEL=${{ github.sha }}"
+          env_file: "stacks/.env"
           debug: true
