@@ -1,13 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/schema.json",
   "build": {
-    "beforeBuildCommand": "pnpm run build",
+    "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "pnpm run dev",
     "devPath": "http://localhost:5173",
     "distDir": "../build"
   },
   "package": {
-    "productName": "subnetmask",
+    "productName": "SubnetMask Visualizer",
     "version": "0.1.0"
   },
   "tauri": {
