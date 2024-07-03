@@ -124,6 +124,7 @@
     :root {
         font-size: 2vw;
     }
+
     :global(input) {
         font-size: 1rem;
         text-align: center;
