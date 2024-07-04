@@ -5,8 +5,7 @@ COPY package.json .
 RUN npm install
 COPY . .
 RUN npx svelte-kit sync
-RUN export ADAPTER=node
-RUN npm run build
+RUN ADAPTER=node npm run build
 
 FROM node:18-alpine AS run
 
